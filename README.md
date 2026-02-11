@@ -103,9 +103,3 @@ python task_server.py
 
 ---
 
-## 💡 Possible Enhancements
-
-- [ ] Add persistent storage (save tasks to a JSON file)
-- [ ] Add task priorities and due dates
-- [ ] Add an LLM-powered agent that uses the MCP tools
-- [ ] Deploy the server with HTTP transport for remote access
