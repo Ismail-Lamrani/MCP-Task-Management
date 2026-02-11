@@ -9,23 +9,38 @@ async def main():
     client = Client("task_server.py")
 
     async with client:
-        # Show available tools on startup
+        # Show available capabilities on startup
         tools = await client.list_tools()
+        resources = await client.list_resources()
+        prompts = await client.list_prompts()
+
         print("\n✅ Connected to Task Management Server!")
-        print(f"📦 Available tools: {[t.name for t in tools]}\n")
+        print(f"📦 Available tools:     {[t.name for t in tools]}")
+        print(f"📂 Available resources: {[r.uri for r in resources]}")
+        print(f"💬 Available prompts:   {[p.name for p in prompts]}\n")
 
         while True:
-            print("=" * 40)
+            print("=" * 50)
             print("  📋 Task Manager - MCP Client")
-            print("=" * 40)
+            print("=" * 50)
+            print("  ── Tools ──")
             print("  1. Add a task")
             print("  2. Remove a task")
             print("  3. List all tasks")
             print("  4. Complete a task")
-            print("  5. Exit")
-            print("=" * 40)
+            print()
+            print("  ── Resources ──")
+            print("  5. View all tasks       (resource)")
+            print("  6. View task by ID      (resource template)")
+            print()
+            print("  ── Prompts ──")
+            print("  7. Analyze a task       (prompt)")
+            print("  8. Explain a concept    (prompt)")
+            print()
+            print("  0. Exit")
+            print("=" * 50)
 
-            choice = input("\n👉 Choose an option (1-5): ").strip()
+            choice = input("\n👉 Choose an option: ").strip()
 
             if choice == "1":
                 task_name = input("📝 Enter task name: ").strip()
@@ -55,12 +70,50 @@ async def main():
                 except ValueError:
                     print("\n⚠️  Please enter a valid number.")
 
+            # ── Resources ──
+
             elif choice == "5":
-                print("\n👋 Goodbye!")
+                content = await client.read_resource("resource://task-database")
+                print(f"\n📊 All Tasks (JSON):\n{content}")
+
+            elif choice == "6":
+                task_id = input("🔢 Enter task ID: ").strip()
+                try:
+                    content = await client.read_resource(f"resource://tasks/{int(task_id)}")
+                    print(f"\n� Task Details:\n{content}")
+                except ValueError:
+                    print("\n⚠️  Please enter a valid number.")
+
+            # ── Prompts ──
+
+            elif choice == "7":
+                task_id = input("🔢 Enter task ID to analyze: ").strip()
+                try:
+                    result = await client.get_prompt("analyze_task", {"task_id": int(task_id)})
+                    print("\n💬 Prompt Messages:")
+                    for msg in result.messages:
+                        text = msg.content.text if hasattr(msg.content, "text") else str(msg.content)
+                        print(f"   [{msg.role}] {text}")
+                except ValueError:
+                    print("\n⚠️  Please enter a valid number.")
+
+            elif choice == "8":
+                concept = input("📖 Enter concept (priority / deadline / task completion): ").strip()
+                if concept:
+                    result = await client.get_prompt("explain_task_management", {"concept": concept})
+                    print("\n💬 Prompt Messages:")
+                    for msg in result.messages:
+                        text = msg.content.text if hasattr(msg.content, "text") else str(msg.content)
+                        print(f"   [{msg.role}] {text}")
+                else:
+                    print("\n⚠️  Concept cannot be empty.")
+
+            elif choice == "0":
+                print("\n�👋 Goodbye!")
                 break
 
             else:
-                print("\n⚠️  Invalid choice. Please select 1-5.")
+                print("\n⚠️  Invalid choice. Please select 0-8.")
 
             print()  # blank line for readability
 
