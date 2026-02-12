@@ -1,12 +1,48 @@
 # in this phase you can just use the npx @modelcontextprotocol/inspector python task_server.py to test your server in the UI of MCP 
 
 import asyncio
+import os
+from pathlib import Path
 from fastmcp import Client
+from fastmcp.client.elicitation import ElicitResult, ElicitRequestParams, RequestContext
 
+# Root = the project directory (where tasks.json lives)
+# Roots require file:// URIs, so we convert the path using pathlib
+PROJECT_ROOT = Path(os.path.dirname(os.path.abspath(__file__))).as_uri()
+
+
+async def elicitation_handler(
+    message: str,
+    response_type: type | None,
+    params: ElicitRequestParams,
+    context: RequestContext
+):
+    """
+    Handle server elicitation requests.
+    """
+
+    print("\n🟡 Server is requesting additional information.")
+    print(f"📨 {message}")
+
+    user_input = input("👉 Your answer: ").strip()
+
+    if not user_input:
+        print("⚠️  You declined to provide input.")
+        return ElicitResult(action="decline")
+
+    # Automatically return correct type (must use keyword arg value=)
+    if response_type:
+        return response_type(value=user_input)
+
+    return user_input
 
 async def main():
-    # Connect to the task server via stdio transport
-    client = Client("task_server.py")
+    # Connect to the task server with elicitation handler and roots
+    client = Client(
+        "task_server.py",
+        elicitation_handler=elicitation_handler,
+        roots=[PROJECT_ROOT],  # ← Roots: tells the server our workspace location
+    )
 
     async with client:
         # Show available capabilities on startup

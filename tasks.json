@@ -1,7 +1,7 @@
 {
     "1": {
         "name": "playing",
-        "completed": false,
+        "completed": true,
         "priority": "Medium"
     },
     "2": {
@@ -13,5 +13,29 @@
         "name": "searching",
         "completed": false,
         "priority": "Medium"
+    },
+    "4": {
+        "name": "DRIVING",
+        "priority": "High",
+        "deadline": "2026-02-18",
+        "completed": false
+    },
+    "5": {
+        "name": "creatin a new ai agent",
+        "priority": "Low",
+        "deadline": "2026-02-24",
+        "completed": false
+    },
+    "6": {
+        "name": "watching movies",
+        "priority": "Medium",
+        "deadline": "No deadline",
+        "completed": false
+    },
+    "7": {
+        "name": "watching tv",
+        "priority": "Low",
+        "deadline": "2026-02-15)",
+        "completed": false
     }
 }

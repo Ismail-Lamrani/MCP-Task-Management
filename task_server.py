@@ -1,5 +1,5 @@
 import json
-from fastmcp import FastMCP
+from fastmcp import FastMCP, Context
 
 # Créer l'instance du serveur MCP
 mcp = FastMCP(name="Task Management Server")
@@ -57,13 +57,36 @@ def get_task_by_id(task_id: int) -> str:
 # ═══════════════════════════════════════════════════
 
 @mcp.tool()
-def add_task(task_name: str) -> str:
-    """Add a new task to the task list."""
+async def add_task(task_name: str, ctx: Context) -> str:
+    """
+    Add a task. Uses elicitation to ask the user for priority and deadline.
+    """
+    # Ask the user for priority using ctx.elicit()
+    priority_result = await ctx.elicit(
+        message="What is the priority? (High / Medium / Low)",
+        response_type=["High", "Medium", "Low"],
+    )
+    priority = priority_result.data if priority_result.action == "accept" else "Medium"
+
+    # Ask the user for deadline using ctx.elicit()
+    deadline_result = await ctx.elicit(
+        message="What is the deadline? (e.g. 2026-02-15)",
+        response_type=str,
+    )
+    deadline = deadline_result.data if deadline_result.action == "accept" else "No deadline"
+
+    # Save to JSON file
     tasks = load_tasks()
     task_id = len(tasks) + 1
-    tasks[str(task_id)] = {"name": task_name, "completed": False, "priority": "Medium"}
+    tasks[str(task_id)] = {
+        "name": task_name,
+        "priority": priority,
+        "deadline": deadline,
+        "completed": False,
+    }
     save_tasks(tasks)
-    return f"Task '{task_name}' added with ID {task_id}."
+
+    return f"Task '{task_name}' added with ID {task_id} (priority: {priority}, deadline: {deadline})."
 
 
 @mcp.tool()
