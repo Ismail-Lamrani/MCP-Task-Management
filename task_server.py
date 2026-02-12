@@ -126,6 +126,33 @@ def complete_task(task_id: int) -> str:
     return f"Task ID {task_id} not found."
 
 
+@mcp.tool()
+async def suggest_priority(ctx: Context) -> str:
+    """Ask the AI to suggest which pending task to prioritize."""
+    tasks = load_tasks()
+
+    pending = [
+        f"{tid}: {task['name']} (Priority: {task.get('priority', 'N/A')})"
+        for tid, task in tasks.items()
+        if not task["completed"]
+    ]
+
+    if not pending:
+        return "No pending tasks."
+
+    text = "\n".join(pending)
+
+    # ctx.sample() accepts a simple string — it gets sent as a user message
+    result = await ctx.sample(
+        messages=f"Here are my pending tasks:\n{text}\n\nWhich one should I prioritize and why?",
+        system_prompt="You are a productivity assistant.",
+        temperature=0.7,
+        max_tokens=200,
+    )
+
+    return f"🤖 AI Suggestion:\n{result.text}"
+
+
 # ═══════════════════════════════════════════════════
 #  PROMPTS — reusable LLM message templates
 #  Client reads them with: client.get_prompt("name", {args})

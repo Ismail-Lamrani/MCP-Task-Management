@@ -11,7 +11,7 @@
     },
     "3": {
         "name": "searching",
-        "completed": false,
+        "completed": true,
         "priority": "Medium"
     },
     "4": {
@@ -36,6 +36,18 @@
         "name": "watching tv",
         "priority": "Low",
         "deadline": "2026-02-15)",
+        "completed": false
+    },
+    "8": {
+        "name": "testing",
+        "priority": "Low",
+        "deadline": "2026-02-19",
+        "completed": true
+    },
+    "9": {
+        "name": "working in freelance",
+        "priority": "High",
+        "deadline": "2026-02-17",
         "completed": false
     }
 }

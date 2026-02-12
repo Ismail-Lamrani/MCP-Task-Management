@@ -1,10 +1,15 @@
-# in this phase you can just use the npx @modelcontextprotocol/inspector python task_server.py to test your server in the UI of MCP 
-
+# in this phase you can just use the npx @modelcontextprotocol/inspector python task_server.py to test your server in the UI of MCP
 import asyncio
 import os
 from pathlib import Path
 from fastmcp import Client
 from fastmcp.client.elicitation import ElicitResult, ElicitRequestParams, RequestContext
+from fastmcp.client.sampling import (
+    SamplingMessage,
+    SamplingParams,
+    RequestContext,
+)
+
 
 # Root = the project directory (where tasks.json lives)
 # Roots require file:// URIs, so we convert the path using pathlib
@@ -36,12 +41,23 @@ async def elicitation_handler(
 
     return user_input
 
+async def sampling_handler(messages, params, context) -> str:
+    """Mock sampling handler — returns a fake AI response for testing."""
+    print("\n🧠 [MOCK] Server requested AI sampling...")
+    for msg in messages:
+        content = msg.content.text if hasattr(msg.content, "text") else str(msg.content)
+        print(f"   [{msg.role}] {content}")
+
+    return "I suggest you prioritize the highest-priority pending task first. Focus on completing it before moving to lower-priority items. (This is a mock response for testing.)"
+
+
 async def main():
     # Connect to the task server with elicitation handler and roots
     client = Client(
         "task_server.py",
         elicitation_handler=elicitation_handler,
-        roots=[PROJECT_ROOT],  # ← Roots: tells the server our workspace location
+        roots=[PROJECT_ROOT], 
+        sampling_handler=sampling_handler, # ← Roots: tells the server our workspace location
     )
 
     async with client:
@@ -143,9 +159,13 @@ async def main():
                         print(f"   [{msg.role}] {text}")
                 else:
                     print("\n⚠️  Concept cannot be empty.")
+            
+            elif choice == "9":
+                result = await client.call_tool("suggest_priority", {})
+                print(result)
 
             elif choice == "0":
-                print("\n�👋 Goodbye!")
+                print("\n👋 Goodbye!")
                 break
 
             else:
